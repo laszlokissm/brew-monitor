@@ -33,7 +33,7 @@ export interface SessionRecord {
   startTime: number // Unix timestamp
   endTime?: number | null
   notes?: string
-  recipeSnapshot: RecipeStep[] // Snapshot of recipe steps at session start
+  recipeSnapshot: Recipe // Full snapshot of recipe (metadata and steps) at session start
 }
 
 // ==========================================
