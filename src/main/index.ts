@@ -2,6 +2,12 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { DatabaseService } from './DatabaseService'
+import { RecipeService } from './RecipeService'
+import { HttpServer } from './server'
+
+let databaseService: DatabaseService | null = null
+let httpServer: HttpServer | null = null
 
 function createWindow(): void {
   // Create the browser window.
@@ -38,7 +44,7 @@ function createWindow(): void {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
@@ -48,6 +54,17 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
+
+  // Initialize Backend Services
+  try {
+    databaseService = new DatabaseService()
+    const recipeService = new RecipeService(databaseService)
+
+    httpServer = new HttpServer({ recipeService }, 3001)
+    await httpServer.start()
+  } catch (error) {
+    console.error('[Main] Failed to initialize backend services:', error)
+  }
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
@@ -61,14 +78,19 @@ app.whenReady().then(() => {
   })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+// Clean shutdown on app quit
+app.on('before-quit', async () => {
+  if (httpServer) {
+    await httpServer.stop()
+  }
+  if (databaseService) {
+    databaseService.close()
+  }
+})
+
+// Quit when all windows are closed, except on macOS.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
