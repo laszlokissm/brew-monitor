@@ -30,18 +30,29 @@ export interface SessionRecord {
   recipeId?: number
   vesselId: string
   status: SessionStatus
-  startTime: number // Unix timestamp
+  startTime: number
   endTime?: number | null
   notes?: string
-  recipeSnapshot: Recipe // Full snapshot of recipe (metadata and steps) at session start
+  recipeSnapshot: Recipe
+}
+
+export interface BrewSessionState {
+  sessionId: number
+  name: string
+  vesselId: string
+  status: SessionStatus
+  tempBottom: number | null
+  tempTop: number | null
+  timestamp: number
 }
 
 // ==========================================
 // Telemetry & Hardware Ingestion
 // ==========================================
 
-export interface MqttReading {
+export interface SensorReading {
   vesselId: string
+  sensorId: string
   temperature: number
   timestamp: number
 }
@@ -50,7 +61,8 @@ export interface TelemetryReading {
   id?: number
   sessionId: number
   timestamp: number
-  temperature: number
+  tempBottom?: number
+  tempTop?: number
   targetTemperature?: number
 }
 
@@ -66,20 +78,4 @@ export interface SessionNotification {
   timestamp: number
   level: NotificationLevel
   message: string
-}
-
-// ==========================================
-// Real-Time Live Streaming (WebSocket)
-// ==========================================
-
-export interface LiveSessionState {
-  sessionId: number
-  vesselId: string
-  status: SessionStatus
-  currentTemperature: number
-  targetTemperature: number
-  currentStepIndex: number
-  currentStepName: string
-  stepRemainingSeconds: number
-  timestamp: number
 }

@@ -62,7 +62,8 @@ export class DatabaseService {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         session_id INTEGER NOT NULL,
         timestamp INTEGER NOT NULL,
-        temperature REAL NOT NULL,
+        temp_bottom REAL,
+        temp_top REAL,
         target_temperature REAL,
         FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
       );
